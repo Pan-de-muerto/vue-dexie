@@ -18,7 +18,7 @@
 
           <div>
             <span class="emoji-btn">📝</span>
-            <span @click="deleteUser(user.id)" class="emoji-btn">❌</span>
+            <span @click="deleteUser(user)" class="emoji-btn">❌</span>
           </div>
         </div>
       </div>
@@ -51,8 +51,10 @@ export default {
         payload: { name: name.value, email: email.value },
       };
       try {
-        const id = await db.requests.add(newRequest);
-        console.log(id);
+        await db.requests.add(newRequest);
+        await db.users.add({name : name.value , email : email.value, isSync:false})
+        name.value = '';
+        email.value = '';
       } catch (error) {
         console.error(error);
       }
@@ -60,17 +62,18 @@ export default {
       // add request to queue
     }
 
-    async function deleteUser(userId) {
+    async function deleteUser(user) {
       const newRequest = {
         method: "delete",
-        userId: userId,
+        userId: user.id,
       };
-
       try {
         await db.requests.add(newRequest);
+        await db.users.delete(user.id)
       } catch (error) {
         console.error(error);
       }
+
     }
 
     async function handleSync() {
